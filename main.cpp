@@ -9,4 +9,8 @@ int main()
 	v2.affi();
 	std::cout << "size = " << v2.size() << " capacity = " << v2.capacity() << " max_size = " << v2.max_size() << std::endl;
 	std::cout << std::boolalpha << v1.empty() << " " << v2.empty() << std::endl;
+
+	v2.double_size();
+	std::cout << v2.capacity() << std::endl;
+	v2.affi();
 }

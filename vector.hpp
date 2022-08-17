@@ -55,7 +55,7 @@ namespace ft{
 			{}*/
 			vector(vector const & ref);
 
-			~vector(){_alloc.deallocate(_start, this->max_size());}
+			~vector(){_alloc.deallocate(_start, this->capacity());}
 
 			/*Fonctions membres*/
 			void	affi(){
@@ -84,9 +84,30 @@ namespace ft{
 				return (i);
 			}
 
-			size_t max_size() const {return (allocator_type().max_size());}
+			size_t max_size() const {
+				return (allocator_type().max_size());
+			}
 
-			bool empty() const{return(size() > 0 ? false : true);}
+			bool empty() const{
+				return(size() > 0 ? false : true);
+			}
+
+			void double_size(){
+				pointer	ostart = _start;
+				pointer oend = _end;
+				size_t ocap = this->capacity();
+				_capacity = _capacity + ocap;
+
+				std::cout << this->capacity();
+				_start = _alloc.allocate(this->capacity(), oend);
+
+				_end = _start;
+				while (ostart < oend){
+					_alloc.construct(_end, *ostart);
+					_end++;
+					ostart++;
+				}
+			}
 
 			/*Accesseur*/
 			allocator_type get_allocator(){return (_alloc);}
