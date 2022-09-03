@@ -2,6 +2,7 @@
 # define VECTOR_HPP
 
 #include <memory>
+#include <stdexcept>
 #include <iostream>
 
 namespace ft{
@@ -9,117 +10,221 @@ namespace ft{
 		class vector
 		{
 		public:
-			/*Member types*/
+			/*Member types 9/12*/
 			typedef T													value_type;
 			typedef Alloc												allocator_type;
-
 			typedef typename	allocator_type::reference				reference;
 			typedef typename	allocator_type::const_reference			const_reference;
 			typedef typename	allocator_type::pointer					pointer;
 			typedef typename	allocator_type::const_pointer			const_pointer;
-			/*VOIR SI LES 4 SUIVANTS SONT A CHANGER*/
-			//typedef	std::random_access_iterator_tag<value_type>			iterator;
-			//typedef	std::random_access_iterator_tag<const value_type>	const_iterator;
+			//typedef std::random_access_iterator<value_type>							iterator;
+			//typedef std::random<const value_type>						const_iterator;
 			typedef std::reverse_iterator<value_type>					reverse_iterator;
 			typedef std::reverse_iterator<const value_type>				const_reverse_iterator;
-
-			//typedef std::iterator_traits<iterator>::difference_type		difference_type;
 			typedef typename allocator_type::size_type							size_type;
 
-			/*Constructeur*/
+
+
+
+
+			/*Constructeur 2/4 */
 			explicit vector(const allocator_type & alloc = allocator_type()):
 				_alloc(alloc),
 				_start(NULL),
-				_end(NULL),
-				_capacity(NULL)
+				_size(0),
+				_capacity(0)
 			{}
 
 			explicit vector(size_t n, const value_type & val = value_type(), const allocator_type & alloc = allocator_type()):
 				_alloc(alloc),
 				_start(NULL),
-				_end(NULL),
-				_capacity(NULL)
+				_size(0),
+				_capacity(0)
 			{
 				_start = _alloc.allocate(n);
-				_capacity = _start + n;
-				_end = _start;
+				_capacity = n;
+				_size = n;
 				for (size_t i = 0; i < n; i++){
-					_alloc.construct(_end, val);
-					_end++;
+					_alloc.construct(_start + i, val);
 				}
 			}
 
-			/*template<class InputIterator> vector(InputIterator first, InputIterator last, const allocator_type & alloc = allocator_type());
-				vector(const vector & X):
-				_alloc(alloc),
-			{}*/
-			vector(vector const & ref);
 
-			~vector(){_alloc.deallocate(_start, this->capacity());}
 
-			/*Fonctions membres*/
-			void	affi(){
-				pointer end = _end;
-				for (pointer start=_start; start < end; start++){
-					std::cout << *start << " ";
-				}
-				std::cout << std::endl;
+
+
+			/*Destructeur 1/1*/
+			~vector(){
+				_alloc.destroy(_start);
+				_alloc.deallocate(_start, this->capacity());
 			}
 
+
+
+
+
+			/*Iterators 0/4*/
+
+
+
+
+
+			/*Capacity 6/6*/
 			size_t size() const{
-				pointer end = _end;
-				size_t i = 0;
-				for (pointer start=_start; start < end; start++){
-					i++;
-				}
-				return (i);
-			}
-
-			size_t capacity() const{
-				pointer capacity = _capacity;
-				size_t i = 0;
-				for (pointer start=_start; start < capacity; start++){
-					i++;
-				}
-				return (i);
+				return (_size);
 			}
 
 			size_t max_size() const {
 				return (allocator_type().max_size());
 			}
 
+			void resize (size_type n, value_type val = value_type()){
+				if (n < _size){
+					this->pop_back();
+					this->resize(n, val);
+				}
+				else if (n > _size){
+					this->push_back(val);
+					this->resize(n, val);
+				}
+			}
+
+			size_t capacity() const{
+				return(_capacity);
+			}
+
 			bool empty() const{
 				return(size() > 0 ? false : true);
 			}
 
-			void double_size(){
+			void reserve (size_type n){
+				while (n > _capacity){
+					double_capacity();
+				}
+			}
+
+
+
+
+
+			/*Element access 5/5*/ /*Exception a changer dans at*/
+			reference operator[] (size_type n){
+				return (*(_start + n));
+			}
+			const_reference operator[] (size_type n) const{
+				return (*(_start + n));
+			}
+
+			reference at (size_type n){
+				if (n >= _size || n < 0)
+					throw std::exception();
+				return (*(_start + n));
+			}
+			const_reference at (size_type n) const{
+				if (n >= _size || n < 0)
+					throw std::exception();
+				return (*(_start + n));
+			}
+
+			reference front(){
+				return (*(_start));
+			}
+			const_reference front() const{
+				return (*(_start));
+			}
+
+			reference back(){
+				return (*(_start + (_size - 1)));
+			}
+			const_reference back() const{
+				return (*(_start + (_size - 1)));
+			}
+
+			value_type* data(){
+				return (_start);
+			}
+			const value_type* data() const{
+				return (_start);
+			}
+
+
+
+
+
+			/*Modifiers 3/7*/
+			void push_back (const value_type& val){
+				if (_size == _capacity)
+					double_capacity();
+				_alloc.construct(_start + _size, val);
+				_size++;
+			}
+
+			void pop_back(){
+				_size--;
+				_alloc.destroy(_start + _size);
+			}
+
+			void clear(){
+				while (_size > 0){
+					_size--;
+					_alloc.destroy(_start + _size);
+				}
+			}
+			
+			/*1/2*/void assign (size_type n, const value_type& val){
+				clear();
+				while (n > 0){
+					push_back(val);
+					n--;
+				}
+			}
+
+			void swap (vector& x){
+				ft::vector<value_type> tmp((x.size() > _size ? x.size() : _size));
+			}
+
+
+
+
+
+			/*Utils*/
+			void double_capacity(){
 				pointer	ostart = _start;
-				pointer oend = _end;
-				size_t ocap = this->capacity();
-				_capacity = _capacity + ocap;
-
-				std::cout << this->capacity();
-				_start = _alloc.allocate(this->capacity(), oend);
-
-				_end = _start;
+				pointer oend = _start + _size;
+				_capacity = _capacity * 2;
+				_start = _alloc.allocate(this->capacity());
+				size_t i = 0;
 				while (ostart < oend){
-					_alloc.construct(_end, *ostart);
-					_end++;
+					_alloc.construct(_start + i, *ostart);
+					i++;
 					ostart++;
 				}
 			}
 
-			/*Accesseur*/
+			void	affi(){
+				pointer end = _start + _size;
+				std::cout << "{";
+				for (pointer start=_start; start < end; start++){
+					std::cout << *start;
+					if (start+1 < end)
+						std::cout << " ";
+				}
+				std::cout << "}" << std::endl;
+			}
+
+			/*Allocator*/
 			allocator_type get_allocator(){return (_alloc);}
 
-			/*Operateurs*/
-			vector &operator=(vector const & rhs);
+			/*Operateur=*/
+			vector &operator=(vector const & rhs){
+				
+			}
 
 		private:
 			allocator_type	_alloc;
 			pointer			_start;
-			pointer			_end;
-			pointer			_capacity;
+			size_t			_size;
+			size_t			_capacity;
 		};
 
 }

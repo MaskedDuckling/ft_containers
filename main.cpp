@@ -2,15 +2,16 @@
 
 int main()
 {
-	ft::vector<int> v1;
-	ft::vector<float> v2(5, 14.5f);
+	ft::vector<int> Vempty;
+	ft::vector<int> Vint(1, 8);
+	ft::vector<float> Vfloat(1, 14.5f);
 
-	v1.affi();
-	v2.affi();
-	std::cout << "size = " << v2.size() << " capacity = " << v2.capacity() << " max_size = " << v2.max_size() << std::endl;
-	std::cout << std::boolalpha << v1.empty() << " " << v2.empty() << std::endl;
+	Vempty.affi();
+	Vint.affi();
+	Vfloat.affi();
+	std::cout << "Empty: Empty? = " << std::boolalpha << Vempty.empty()<< " size = " << Vempty.size() << " capacity = " << Vempty.capacity() << " max_size = " << Vempty.max_size() << std::endl;
+	std::cout << "Int: Empty? = " << std::boolalpha << Vint.empty()<< " size = " << Vint.size() << " capacity = " << Vint.capacity() << " max_size = " << Vint.max_size() << std::endl;
+	std::cout << "Float: Empty? = " << std::boolalpha << Vfloat.empty()<< " size = " << Vfloat.size() << " capacity = " << Vfloat.capacity() << " max_size = " << Vfloat.max_size() << std::endl;
 
-	v2.double_size();
-	std::cout << v2.capacity() << std::endl;
-	v2.affi();
+
 }
