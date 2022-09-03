@@ -117,12 +117,12 @@ namespace ft{
 
 			reference at (size_type n){
 				if (n >= _size || n < 0)
-					throw std::exception();
+					throw std::out_of_range("Index out of range");
 				return (*(_start + n));
 			}
 			const_reference at (size_type n) const{
 				if (n >= _size || n < 0)
-					throw std::exception();
+					throw std::out_of_range("Index out of range");
 				return (*(_start + n));
 			}
 
@@ -216,9 +216,7 @@ namespace ft{
 			allocator_type get_allocator(){return (_alloc);}
 
 			/*Operateur=*/
-			vector &operator=(vector const & rhs){
-				
-			}
+			vector &operator=(vector const & rhs);
 
 		private:
 			allocator_type	_alloc;
