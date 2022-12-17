@@ -7,7 +7,7 @@ CFLAGS = -Wall -Wextra -Werror -std=c++98
 
 SRC = main.cpp 
 
-INC = vector.hpp
+INC = vector.hpp stack.hpp pair.hpp
 
 OBJ = $(SRC:.cpp=.o)
 
