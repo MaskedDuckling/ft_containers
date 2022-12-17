@@ -224,6 +224,5 @@ namespace ft{
 			size_t			_size;
 			size_t			_capacity;
 		};
-
 }
 #endif

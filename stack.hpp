@@ -4,7 +4,7 @@
 #include <vector>
 
 namespace ft{
-	template<class T, class Container = std::vector<T> >
+	template<class T, class Container = ft::vector<T> >
 		class stack
 		{
         
@@ -40,6 +40,31 @@ namespace ft{
             void push (const value_type& val){
                 cntr.push_back(val);
             }
+
+            friend bool operator== (const stack<T,Container>& lhs, const stack<T,Container>& rhs){
+                return (lhs.cntr == rhs.cntr);
+            }
+
+            friend bool operator!= (const stack<T,Container>& lhs, const stack<T,Container>& rhs){
+                return (lhs.cntr != rhs.cntr);
+            }
+
+            friend bool operator<  (const stack<T,Container>& lhs, const stack<T,Container>& rhs){
+                return (lhs.cntr < rhs.cntr);
+            }
+
+            friend bool operator<= (const stack<T,Container>& lhs, const stack<T,Container>& rhs){
+                return (lhs.cntr <= rhs.cntr);
+            }
+
+            friend bool operator>  (const stack<T,Container>& lhs, const stack<T,Container>& rhs){
+                return (lhs.cntr > rhs.cntr);
+            }	
+
+            friend bool operator>= (const stack<T,Container>& lhs, const stack<T,Container>& rhs){
+                return (lhs.cntr >= rhs.cntr);
+            }
+
         protected:
             container_type cntr;
 		};
