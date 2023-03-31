@@ -23,15 +23,11 @@ struct RB_node;
 // template <typename T>
 // struct RBtree;
 
-template<
-    class Key,
-    class T,
-    class Compare = std::less<Key>,
-    class Allocator = std::allocator<pair<const Key, T> >
-	>
-class map
-{
+template<class Key, class T, class Compare = std::less<Key>,class Allocator = std::allocator<pair<const Key, T> > >
+class map{
 	public:
+
+	/*Member types*/
 
 	typedef	Key													key_type;
 	typedef	T													mapped_type;
@@ -55,6 +51,7 @@ class map
 	typedef				ft::RB_node<value_type>					node_type;
 	typedef				ft::RB_tree<value_type>					tree_type;
 
+	/*Classe integre de comparaison*/
 
 	class value_compare
 	{
@@ -79,25 +76,32 @@ class map
 	key_compare					comp;
 	std::allocator<node_type>	_node_allocator;
 
-
-
 	public:
 
-	explicit map (const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type())
-	: tree(new tree_type()), _allocator(alloc), _size(0) , comp(comp)
+	/*Constructeurs*/
+
+	explicit map (const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type()):
+	tree(new tree_type()),
+	_allocator(alloc),
+	_size(0),
+	comp(comp)
 	{};
 			  
 	template <class InputIterator>
-	map(InputIterator first, InputIterator last,
-		const key_compare& comp = key_compare(),
-		const allocator_type& alloc = allocator_type())
-	: tree(new tree_type()), _allocator(alloc), _size(0) , comp(comp)
+	map(InputIterator first, InputIterator last, const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type()):
+	tree(new tree_type()),
+	_allocator(alloc),
+	_size(0),
+	comp(comp)
 	{
 		insert(first, last);
 	};
 		
-	map(const map& x)	
-	: tree(new tree_type()), _allocator(x._allocator), _size(0) , comp(x.comp)
+	map(const map& x):
+	tree(new tree_type()), 
+	_allocator(x._allocator), 
+	_size(0), 
+	comp(x.comp)
 	{
 		insert(x.begin(), x.end());
 	};
@@ -107,6 +111,8 @@ class map
 		clear();
 		delete this->tree;
 	};
+
+	/*Operateur =*/
 
 	map& operator=(const map& x)
 	{
@@ -118,45 +124,21 @@ class map
 		return *this;
 	};
 
-T& at( const Key& key )
-{
-	return (operator[](key));
-};
-const T& at( const Key& key ) const
-{
-	return (operator[](key));
-};
+	/*Iterateurs*/
 
+	iterator begin()						{return iterator(this->tree->minimum()); };
+	const_iterator begin() const			{return const_iterator(this->tree->minimum()); };
 
-mapped_type& operator[] (const key_type& k)	{
-		return (*((insert(ft::make_pair(k, mapped_type()))).first)).second;
-	}
+	iterator end()							{return iterator(this->tree->leaf); };
+	const_iterator end() const				{return const_iterator(this->tree->leaf); };
+	
+	reverse_iterator rbegin()				{return reverse_iterator(this->tree->leaf); };
+	const_reverse_iterator rbegin() const	{return const_reverse_iterator(this->tree->leaf); };
+	
+	reverse_iterator rend()					{return reverse_iterator(this->tree->minimum()); };
+	const_reverse_iterator rend() const		{return const_reverse_iterator(this->tree->minimum()); };
 
-	iterator begin()	{
-		return iterator(this->tree->minimum());
-	};
-	const_iterator begin() const	{
-		return const_iterator(this->tree->minimum());
-	};
-	iterator end()	{
-		return iterator(this->tree->leaf);
-	};
-	const_iterator end() const	{
-		return const_iterator(this->tree->leaf);
-	};
-	reverse_iterator rbegin()	{
-		return reverse_iterator(this->tree->leaf);
-	};
-	const_reverse_iterator rbegin() const	{
-		return const_reverse_iterator(this->tree->leaf);
-	};
-	reverse_iterator rend()	{
-		return reverse_iterator(this->tree->minimum());
-	};
-	const_reverse_iterator rend() const	{
-		return const_reverse_iterator(this->tree->minimum());
-	};
-
+	/*Capacite*/
 
 	bool empty() const
 	{
@@ -179,6 +161,60 @@ mapped_type& operator[] (const key_type& k)	{
 		return (-1);
 	};
 
+	/*Accesseurs*/
+
+	T& at( const Key& key )
+	{
+		return (operator[](key));
+	};
+	const T& at( const Key& key ) const
+	{
+		return (operator[](key));
+	};
+
+	mapped_type& operator[] (const key_type& k)	{
+		return (*((insert(ft::make_pair(k, mapped_type()))).first)).second;
+	}
+
+	/*Modifieurs*/
+
+	ft::pair<iterator, bool>	insert(const value_type& val)
+	{
+		node_type **dst = &tree->root;
+		node_type *parent = NULL;
+
+		while (*dst != tree->leaf)	{
+			
+			parent = *dst;
+			if (comp(val.first, (*dst)->value->first))
+				dst = &(*dst)->_left;
+			else if (comp((*dst)->value->first, val.first))
+				dst = &(*dst)->_right;
+			else
+				return ft::make_pair(iterator(*dst), false);
+		}
+
+		value_type *new_val = _allocator.allocate(1);
+		_allocator.construct(new_val, val);
+		node_type *new_node = _node_allocator.allocate(1);
+		_node_allocator.construct(new_node, node_type(new_val, *tree));
+
+		tree->insert(parent, *dst, new_node);
+
+		_size++;
+		return ft::make_pair(iterator(new_node), true);
+	};
+
+	iterator insert (iterator position, const value_type& val)	{
+		(void) position;
+		return insert(val).first;
+	}
+	
+	template <class InputIterator>
+	void insert (typename ft::enable_if<!is_integral<InputIterator>::value, InputIterator>::type first, InputIterator last)	{
+		for (; first != last; first++)
+			insert(*first);
+	}
 
 	void erase (iterator position)
 	{
@@ -213,43 +249,6 @@ mapped_type& operator[] (const key_type& k)	{
 	void clear()
 	{	erase(begin(), end());	};
 
-	ft::pair<iterator, bool>	insert(const value_type& val)
-	{
-		node_type **dst = &tree->root;
-		node_type *parent = NULL;
-
-		while (*dst != tree->leaf)	{
-			
-			parent = *dst;
-			if (comp(val.first, (*dst)->value->first))
-				dst = &(*dst)->leftChild;
-			else if (comp((*dst)->value->first, val.first))
-				dst = &(*dst)->rightChild;
-			else
-				return ft::make_pair(iterator(*dst), false);
-		}
-
-		value_type *new_val = _allocator.allocate(1);
-		_allocator.construct(new_val, val);
-		node_type *new_node = _node_allocator.allocate(1);
-		_node_allocator.construct(new_node, node_type(new_val, *tree));
-
-		tree->insert(parent, *dst, new_node);
-
-		_size++;
-		return ft::make_pair(iterator(new_node), true);
-	};
-
-	iterator insert (iterator position, const value_type& val)	{
-		(void) position;
-		return insert(val).first;
-	}
-	
-	template <class InputIterator>
-	void insert (typename ft::enable_if<!is_integral<InputIterator>::value, InputIterator>::type first, InputIterator last)	{
-		for (; first != last; first++)
-			insert(*first);
-	}
 
 	void swap (map& x)
 	{
@@ -258,6 +257,8 @@ mapped_type& operator[] (const key_type& k)	{
 		ft::swap(this->_allocator, x._allocator);
 		ft::swap(this->comp, x.comp);
 	};
+
+	/*Observeurs*/
 
 	key_compare key_comp() const	{
 		return comp;
@@ -270,6 +271,8 @@ mapped_type& operator[] (const key_type& k)	{
 	allocator_type	get_allocator() const	{
 		return this->_allocator;
 	}
+
+	/*Operations*/
 
 	iterator find (const key_type& k)	{
 		node_type	*node = get_node(k);
@@ -340,6 +343,7 @@ mapped_type& operator[] (const key_type& k)	{
 	{
 		return ft::make_pair(lower_bound(k), upper_bound(k));	};
 
+	/*Operateurs friend*/
 
 	friend
 	bool operator== (const map& lhs, const map& rhs)	{
@@ -353,8 +357,7 @@ mapped_type& operator[] (const key_type& k)	{
 		return ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 	}
 
-	
-
+	/*Autres*/
 
 	private:
 
@@ -363,9 +366,9 @@ mapped_type& operator[] (const key_type& k)	{
 
 		while (n !=this->tree->leaf)	{
 			if (comp(n->value->first, key))
-				n = n->rightChild;
+				n = n->_right;
 			else if (comp(key, n->value->first))
-				n = n->leftChild;
+				n = n->_left;
 			else
 				return n;
 		}
@@ -380,28 +383,23 @@ mapped_type& operator[] (const key_type& k)	{
 		while (n != this->tree->leaf)	{
 			if (comp(n->value->first, key))	{
 				parent = n;
-				n = n->rightChild;
+				n = n->_right;
 			}
 			else if (comp(key, n->value->first))	{
 				parent = n;
-				n = n->leftChild;
+				n = n->_left;
 			}
 			else
 				return (ft::make_pair(n, parent));
 		}
 		return (ft::make_pair(n, parent));
 	};
-
-
-
-
-
 };
 
-template <class Key, class T>
-void swap (map<Key, T>& x, map<Key, T> &y)	{
-	x.swap(y);
-}
+	template <class Key, class T>
+	void swap (map<Key, T>& x, map<Key, T> &y)	{
+		x.swap(y);
+	}
 
 	template <class Key, class T>
 	bool operator<= (const map<Key, T>& lhs, const map<Key, T>& rhs)	{
